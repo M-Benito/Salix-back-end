@@ -16,7 +16,6 @@ const db = admin.firestore();
 
 // Routes
 app.get('/hello-world', (req, res) => {
-    //return res.status(200).json({ message: 'Hello world' })
     return res.status(200).send('Hello world!');
 });
 
@@ -29,12 +28,24 @@ app.post('/api/create/product', async (req, res) => {
             .create({ name: req.body.name });
         return res.status(200).send();
     } catch (error) {
-        console.log(error);
         return res.status(500).send(error);
     }
 });
 
 // Read (GET)
+app.get('/api/get/user/:id', async (req, res) => {
+    try {
+        const doc = db
+            .collection('Users')
+            .doc(req.params.id);
+        let action = await doc.get();
+        let response = action.data();
+        return res.status(200).send(response);
+    } catch (error) {
+        return res.status(500).send(error);
+    }
+});
+
 app.get('/api/get/daily_action/:id', async (req, res) => {
     try {
         const doc = db
@@ -87,7 +98,6 @@ app.put('/api/update/daily_action/:id', async (req, res) => {
 
         return res.status(200).send();
     } catch (error) {
-        console.log(error);
         return res.status(500).send(error);
     }
 });
