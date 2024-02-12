@@ -21,55 +21,91 @@ app.get('/hello-world', (req, res) => {
 });
 
 // Create (POST)
-app.post('/api/create/products', (req, res) => {
-
-    ( async () => {
-        try {
-            await db
-                .collection('products')
-                .doc('/' + req.body.id + '/')
-                .create({ name: req.body.name });
-            return res.status(200).send();
-        } catch (error) {
-            console.log(error);
-            return res.status(500).send(error);
-        }
-    })();
-
-    
+app.post('/api/create/product', async (req, res) => {
+    try {
+        await db
+            .collection('products')
+            .doc('/' + req.body.id + '/')
+            .create({ name: req.body.name });
+        return res.status(200).send();
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send(error);
+    }
 });
 
 // Read (GET)
+app.get('/api/get/daily_action/:id', async (req, res) => {
+    try {
+        const doc = db
+            .collection('daily_actions')
+            .doc(req.params.id);
+        let action = await doc.get();
+        let response = action.data();
+        return res.status(200).send(response);
+    } catch (error) {
+        return res.status(500).send(error);
+    }
+});
+
+app.get('/api/get/daily_actions', async (req, res) => {
+    try {
+        let query = db
+            .collection('daily_actions');
+        let response = [];
+
+        await query.get().then(querySnapshot => {
+            let docs = querySnapshot.docs;
+            for (let doc of docs) {
+                const selectedItem = {
+                    id: doc.id,
+                    title: doc.data().title,
+                    body: doc.data().body,
+                    points: doc.data().points
+                }
+                response.push(selectedItem);
+            }
+            return response;
+        });
+        return res.status(200).send(response);
+    } catch (error) {
+        return res.status(500).send(error);
+    }
+});
 
 // Update (PUT)
+app.put('/api/update/daily_action/:id', async (req, res) => {
+    try {
+        const doc = db
+            .collection('daily_actions')
+            .doc(req.params.id);
+        await doc.update({
+            title: req.body.title,
+            body: req.body.body,
+            points: req.body.points
+        });
+
+        return res.status(200).send();
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send(error);
+    }
+});
 
 // Delete (DELETE)
-
-
-
-
-
-app.get('/api/daily_actions/:id', async (req, res) => {
+app.delete('/api/delete/product/:id', async (req, res) => {
     try {
-        const doc = db.collection('daily_actions').doc(req.params.id);
-        const item = await doc.get();
-        const response = item.data();
-        return res.status(200).json(response);
+        const doc = db
+            .collection('products')
+            .doc(req.params.id);
+        await doc.delete();
+        return res.status(200).send();
     } catch (error) {
+        console.log(error);
         return res.status(500).send(error);
     }
 });
 
-app.get('/api/daily_actions/', async (req, res) => {
-    try {
-        const doc = db.collection('daily_actions');
-        const item = await doc.get();
-        const response = item.docs;
-        return res.status(200).json(response);
-    } catch (error) {
-        return res.status(500).send(error);
-    }
-});
 
 // Export API to Firebase Cloud Functions
 exports.app = functions.https.onRequest(app);
