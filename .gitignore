@@ -1,3 +1,11 @@
+# Node modules
 node_modules/
 
+# Sensitive information
 credentials.json
+
+# Firestore
+firebase-debug.log
+
+# logs
+*.log
