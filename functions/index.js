@@ -107,5 +107,6 @@ app.delete('/api/delete/product/:id', async (req, res) => {
 });
 
 
+
 // Export API to Firebase Cloud Functions
 exports.app = functions.https.onRequest(app);
