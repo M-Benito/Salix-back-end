@@ -111,6 +111,42 @@ app.get('/api/get/daily_ligth_price/:zone', async (req, res) => {
     }
 });
 
+app.get('/api/get/user_daily_actions/:id', async (req, res) => {
+    try {
+        let DAQuery = await db.collection('daily_actions').get();
+        let userDAQuery = await db.collection('users_daily_actions').get();
+        let responseDA = [];
+        let responseUserDAU = [];
+
+        DAQuery.docs.map((doc) => {
+            const dailyActions = {
+                id: doc.id,
+                body: doc.data().body,
+                points: doc.data().points,
+                title: doc.data().title
+            }
+            responseDA.push(dailyActions);
+        });
+
+        userDAQuery.docs.map((doc) => {
+            if (doc.data().userId == req.params.id) {
+                const userAction = {
+                    dailyActionId: doc.data().dailyActionId,
+                    title: responseDA[doc.data().dailyActionId - 1].title,
+                    body: responseDA[doc.data().dailyActionId - 1].body,
+                    points: responseDA[doc.data().dailyActionId - 1].points,
+                    isCompleted: doc.data().isCompleted,
+                }
+                responseUserDAU.push(userAction);
+            }
+        });
+
+        return responseUserDAU.length != 0 ? res.status(200).send(responseUserDAU) : res.status(400).send("ERROR BUSINESS LOGIC: Not user found");
+    } catch (error) {
+        return res.status(500).send(error);
+    }
+});
+
 // Update (PUT)
 app.put('/api/update/daily_action/:id', async (req, res) => {
     try {
